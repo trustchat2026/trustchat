@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TrustChat Desktop</title>
+<style>
+:root{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#0f172a;background:#eef5ff}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;box-sizing:border-box}.card{width:min(100%,760px);background:#fff;border-radius:30px;padding:34px;box-shadow:0 28px 80px rgba(37,99,235,.16);border:1px solid rgba(148,163,184,.26)}img{width:68px;height:68px;border-radius:20px;box-shadow:0 14px 30px rgba(37,99,235,.24)}h1{font-size:38px;line-height:1.05;margin:22px 0 12px;letter-spacing:-.04em}p{font-size:16px;line-height:1.65;color:#475569;font-weight:750}.grid{display:grid;gap:14px;margin-top:20px}label{display:grid;gap:8px;font-weight:900}input{min-height:54px;border:1px solid #cbd5e1;border-radius:16px;padding:0 16px;font:inherit;font-weight:800;outline:none}input:focus{border-color:#2563eb;box-shadow:0 0 0 4px rgba(37,99,235,.12)}button{min-height:54px;border:0;border-radius:16px;background:#2563eb;color:#fff;font:inherit;font-weight:1000;cursor:pointer;box-shadow:0 16px 35px rgba(37,99,235,.24)}button.secondary{background:#eff6ff;color:#2563eb;box-shadow:none}.row{display:flex;gap:10px;flex-wrap:wrap}.row button{flex:1}.note{margin-top:16px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:18px;padding:14px;color:#1e40af;font-weight:850}.error{margin-top:12px;color:#b91c1c;font-weight:900}.muted{font-size:13px;color:#64748b}code{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:2px 6px}</style>
+</head>
+<body>
+<main class="card">
+<img src="../assets/icon.png" alt="TrustChat">
+<h1>Kết nối TrustChat Desktop</h1>
+<p>Nhập website khách hàng đang cài TrustChat. App sẽ tự mở đúng trang <code>/trustchat-app/</code> và lưu lại cho lần sau.</p>
+<div class="grid">
+<label>Địa chỉ website
+<input id="siteUrl" type="url" placeholder="https://domain.com hoặc https://domain.com/thumuccon">
+</label>
+<label>Tên hiển thị <span class="muted">Không bắt buộc</span>
+<input id="siteName" type="text" placeholder="Ví dụ: Công ty ABC">
+</label>
+<div class="row"><button id="saveBtn">Bắt đầu sử dụng</button><button id="clearBtn" class="secondary">Đổi website</button></div>
+</div>
+<div class="note" id="currentNote">App dùng chung cho mọi website khách hàng, không phụ thuộc Chrome profile.</div>
+<div class="error" id="errorBox" hidden></div>
+</main>
+<script>
+(function(){
+  var urlInput=document.getElementById('siteUrl');
+  var nameInput=document.getElementById('siteName');
+  var saveBtn=document.getElementById('saveBtn');
+  var clearBtn=document.getElementById('clearBtn');
+  var errorBox=document.getElementById('errorBox');
+  var currentNote=document.getElementById('currentNote');
+  function showError(text){errorBox.textContent=text||'';errorBox.hidden=!text;}
+  function fillState(){
+    if(!window.TrustChatDesktop)return;
+    window.TrustChatDesktop.getState().then(function(state){
+      if(state&&state.site&&state.site.appUrl){
+        urlInput.value=state.site.appUrl;
+        nameInput.value=state.site.siteName||'';
+        currentNote.textContent='Đang lưu: '+state.site.appUrl;
+      }
+    }).catch(function(){});
+  }
+  saveBtn.addEventListener('click',function(){
+    showError('');
+    saveBtn.disabled=true;
+    window.TrustChatDesktop.saveSite({url:urlInput.value,name:nameInput.value}).then(function(result){
+      saveBtn.disabled=false;
+      if(result&&result.error){showError(result.error);return;}
+    }).catch(function(){saveBtn.disabled=false;showError('Không lưu được website.');});
+  });
+  clearBtn.addEventListener('click',function(){
+    if(!window.TrustChatDesktop)return;
+    window.TrustChatDesktop.clearSite().then(function(){urlInput.value='';nameInput.value='';currentNote.textContent='Đã xoá website đã lưu. Nhập website mới để bắt đầu.';showError('');});
+  });
+  fillState();
+})();
+</script>
+</body>
+</html>

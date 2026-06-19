@@ -1,27 +1,23 @@
 name: Build TrustChat Desktop
 
-on:
-  workflow_dispatch:
-  push:
-    tags:
-      - 'v*'
+on: [workflow_dispatch]
 
 jobs:
   build-windows:
     name: Build Windows EXE
     runs-on: windows-latest
+
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Setup Node.js LTS
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Verify source
         run: npm run verify
@@ -41,18 +37,18 @@ jobs:
   build-macos:
     name: Build macOS DMG
     runs-on: macos-latest
+
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Setup Node.js LTS
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Verify source
         run: npm run verify
